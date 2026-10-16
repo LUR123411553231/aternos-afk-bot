@@ -2,10 +2,10 @@ const mineflayer = require('mineflayer');
 
 function createBot() {
   const bot = mineflayer.createBot({
-    host: 'Obshi_chat.aternos.me:56364', // Замените на ваш IP с Aternos
-    port: 56364,                         // Ваш порт (если стандартный - 25565)
-    username: 'AFK_Bot',                 // Ник бота
-    version: 26.2                        // Авто-определение версии
+    host: 'Obshi_chat.aternos.me', // Только IP/адрес сервера без двоеточия и порта
+    port: 56364,                  // Порт сервера
+    username: 'AFK_Bot'           // Ник бота
+    // Строку version удалили, теперь Mineflayer определит версию автоматически
   });
 
   bot.on('spawn', () => {
