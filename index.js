@@ -1,5 +1,6 @@
 const http = require('http');
 const mineflayer = require('mineflayer');
+const mc = require('minecraft-protocol');
 
 // 1. Веб-сервер для Render
 const server = http.createServer((req, res) => {
@@ -12,7 +13,14 @@ server.listen(PORT, () => {
   console.log(`Веб-сервер запущен на порту ${PORT}`);
 });
 
-// 2. Логика Minecraft-бота с принудительным протоколом
+// Отключаем строгую проверку версии в самом клиенте протокола
+const originalCreateClient = mc.createClient;
+mc.createClient = function(options) {
+  options.version = '1.20.4'; // Подменяем версию для сокета
+  return originalCreateClient.call(this, options);
+};
+
+// 2. Логика Minecraft-бота
 function createBot() {
   console.log('Подключение бота к серверу...');
   
@@ -21,22 +29,13 @@ function createBot() {
     port: 56364,
     username: 'AFK_Bot',
     version: '1.20.4',
-    // Отключаем строгую проверку версии на стороне клиента
-    hideErrors: false,
-    onProtocolVersion: (version) => {
-      return '1.20.4';
-    }
-  });
-
-  // Перехватываем ошибки протокола, чтобы бот не падал
-  bot._client.on('error', (err) => {
-    // Игнорируем ошибки несоответствия версий при рукопожатии
+    checkTimeoutInterval: 60 * 1000
   });
 
   bot.on('spawn', () => {
     console.log('>>> Бот успешно зашел на сервер! <<<');
     
-    // Прыжки каждые 4 секунды от кика за АФК
+    // Прыжки от кика за АФК каждые 4 секунды
     setInterval(() => {
       bot.setControlState('jump', true);
       setTimeout(() => bot.setControlState('jump', false), 500);
