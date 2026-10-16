@@ -2,7 +2,7 @@ const http = require('http');
 const mineflayer = require('mineflayer');
 const protocol = require('minecraft-protocol');
 
-// 1. Веб-сервер для поддержания активности на Render
+// 1. Веб-сервер для Render
 const server = http.createServer((req, res) => {
   res.writeHead(200, { 'Content-Type': 'text/plain' });
   res.end('AFK Bot is running!\n');
@@ -13,12 +13,18 @@ server.listen(PORT, () => {
   console.log(`Веб-сервер запущен на порту ${PORT}`);
 });
 
-// 2. Полностью отключаем встроенную проверку версии версий на стороне клиента
-protocol.Client.prototype.checkVersion = function () {
-  // Пустая функция переопределяет метод проверки и предотвращает выброс ошибки "This server is version..."
+// Перехватываем создание клиента и подменяем версию на лету на уровне сокета
+const originalCreateClient = protocol.createClient;
+protocol.createClient = function(options) {
+  options.version = '1.20.4';
+  const client = originalCreateClient.call(this, options);
+  
+  // Убиваем слушатель проверки версии, если он создался
+  client.removeAllListeners('version');
+  return client;
 };
 
-// 3. Логика подключения бота
+// 2. Логика Minecraft-бота
 function createBot() {
   console.log('Подключение бота к серверу...');
 
@@ -27,14 +33,14 @@ function createBot() {
     port: 56364,
     username: 'AFK_Bot',
     version: '1.20.4',
-    pingServer: false,
-    skipValidation: true
+    skipValidation: true,
+    checkTimeoutInterval: 60 * 1000
   });
 
   bot.on('spawn', () => {
     console.log('>>> Бот успешно зашел на сервер! <<<');
 
-    // Каждые 4 секунды бот подпрыгивает, чтобы не вылетало за AFK
+    // Прыжки от кика каждые 4 секунды
     setInterval(() => {
       bot.setControlState('jump', true);
       setTimeout(() => bot.setControlState('jump', false), 500);
