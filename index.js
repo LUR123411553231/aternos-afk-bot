@@ -1,13 +1,13 @@
 const http = require('http');
 const mineflayer = require('mineflayer');
 
-// 1. Простой HTTP-сервер, чтобы Render не закрывал Web Service
+// 1. Веб-сервер для поддержания работы на Render Web Service
 const server = http.createServer((req, res) => {
   res.writeHead(200, { 'Content-Type': 'text/plain' });
   res.end('AFK Bot is running!\n');
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 10000;
 server.listen(PORT, () => {
   console.log(`Веб-сервер запущен на порту ${PORT}`);
 });
@@ -20,7 +20,7 @@ function createBot() {
     host: 'Obshi_chat.aternos.me',
     port: 56364,
     username: 'AFK_Bot',
-    version: '1.20.1', // Явно указываем поддерживаемую версию (или попробуйте false)
+    version: false, // Отключает жесткую проверку версии сервером
     checkTimeoutInterval: 60 * 1000
   });
 
